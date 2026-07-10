@@ -19,6 +19,7 @@ import { IpTrackerMiddleware } from './middleware/ip-tracker/ip-tracker.middlewa
 import * as redisStore from 'cache-manager-ioredis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisModule } from './redis/redis.module';
+import { AppController } from './app.controller';
 
 @Module({
   imports: [
@@ -51,7 +52,6 @@ import { RedisModule } from './redis/redis.module';
     IpTrackerModule,
     RedisModule,
   ],
-  controllers: [],
   providers: [
     AuthService,
     LoggerMiddleware,
@@ -61,6 +61,7 @@ import { RedisModule } from './redis/redis.module';
       useClass: JtwAuthGuard,
     },
   ],
+  controllers: [AppController],
 })
 export class AppModule {
   configure(consumer: MiddlewareConsumer) {

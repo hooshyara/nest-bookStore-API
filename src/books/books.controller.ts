@@ -8,6 +8,8 @@ import {
   Delete,
   Query,
   UseGuards,
+  UploadedFile,
+  UseInterceptors,
 } from '@nestjs/common';
 import { BooksService } from './books.service';
 import { CreateBookDto } from './dto/create-book.dto';
@@ -19,10 +21,16 @@ import userRoleEnum from 'src/user/enum/userRoleEnum';
 import { Public } from 'src/auth/decorators/public.decorators';
 import {
   ApiBearerAuth,
+  ApiBody,
+  ApiConsumes,
   ApiOperation,
   ApiQuery,
+  ApiResponse,
   ApiTags,
 } from '@nestjs/swagger';
+import { FileInterceptor } from '@nestjs/platform-express';
+import { diskStorage } from 'multer';
+import { extname } from 'path';
 
 @ApiBearerAuth('token')
 @ApiTags('Books - مدریت کتاب ها')
@@ -100,6 +108,70 @@ export class BooksController {
     const books = await this.booksService.search(searchBookDto);
     return {
       data: books,
+    };
+  }
+
+  @ApiOperation({ summary: 'آپلود تصویر کتاب' })
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({
+    schema: {
+      type: 'object',
+      properties: {
+        image: {
+          type: 'string',
+          format: 'binary',
+        },
+      },
+      required: ['image'],
+    },
+  })
+  @ApiResponse({
+    status: 201,
+    description: 'تصویر با موفقیت آپلود شد',
+    schema: {
+      example: {
+        message: 'Image uploaded successfully',
+        imageUrl: '/uploads/books/1720000000000-123456789.jpg',
+      },
+    },
+  })
+  @ApiResponse({
+    status: 400,
+    description: 'فایل نامعتبر است یا ارسال نشده',
+    schema: {
+      example: {
+        statusCode: 400,
+        message: 'Only image files are allowed',
+        error: 'Bad Request',
+      },
+    },
+  })
+  @Post('upload')
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/books',
+        filename: (req, file, cb) => {
+          const fileName = `${Date.now()}-${Math.round(Math.random() * 1e9)}${extname(file.originalname)}`;
+          cb(null, fileName);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        const allowedExtensions = /jpg|jpeg|png|webp/;
+        const ext = extname(file.originalname).toLowerCase();
+
+        if (allowedExtensions.test(ext)) cb(null, true);
+        else cb(new Error('Only image files are allowed'), false);
+      },
+      limits: {
+        fileSize: 1024 * 1024 * 2,
+      },
+    }),
+  )
+  uploadImage(@UploadedFile() file: Express.Multer.File) {
+    return {
+      message: 'Image uploaded successfully',
+      imageUrl: `/uploads/books/${file.filename}`,
     };
   }
 }

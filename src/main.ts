@@ -2,16 +2,16 @@ import { NestFactory } from '@nestjs/core';
 import { AppModule } from './app.module';
 import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
+import { NestExpressApplication } from '@nestjs/platform-express';
+import { join } from 'path';
 
 // import { JtwAuthGuard } from './auth/guard/jwt-auth.guard';
 
 async function bootstrap() {
-  const app = await NestFactory.create(AppModule);
+  const app = await NestFactory.create<NestExpressApplication>(AppModule);
 
   app.enableCors({
     origin: (origin, callback) => {
-      // اجازه دادن به همه Origin‌ها (برای تست)
-      // یا می‌تونی بنویسی: if(!origin) callback(null, true);
       callback(null, true);
     },
     methods: 'GET,HEAD,PUT,PATCH,POST,DELETE,OPTIONS',
@@ -35,6 +35,10 @@ async function bootstrap() {
       'token',
     )
     .build();
+
+  app.useStaticAssets(join(__dirname, '..', 'uploads'), {
+    prefix: '/uploads/',
+  });
 
   const document = SwaggerModule.createDocument(app, confing);
   SwaggerModule.setup('api', app, document);

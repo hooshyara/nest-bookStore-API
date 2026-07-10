@@ -31,6 +31,9 @@ export class Book {
   @Column({ type: 'text', nullable: true })
   description: string;
 
+  @Column({ nullable: true })
+  imageUrl: string;
+
   @Column({ default: true })
   isValid: boolean;
 

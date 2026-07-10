@@ -29,6 +29,11 @@ export class CreateBookDto {
   @Min(0, { message: 'قیمت نمیتواند منفی باشد' })
   price: number;
 
+  @ApiProperty({example:"", description: ' عکس کتاب' })
+  @IsOptional()
+  @IsString()
+  imageUrl?: string;
+
   @ApiProperty({ example: 'lorem ....', description: 'توضیحات کتاب' })
   @IsString({ message: 'توضیحات باید رشته باشد' })
   @IsOptional()
