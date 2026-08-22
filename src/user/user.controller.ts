@@ -18,7 +18,13 @@ import { Response } from 'express';
 import userRoleEnum from './enum/userRoleEnum';
 import { Role } from 'src/auth/decorators/roles.decorator';
 import { RoleGuard } from 'src/auth/guard/role-auth.guard';
-import { ApiBearerAuth, ApiOperation, ApiTags } from '@nestjs/swagger';
+import {
+  ApiBearerAuth,
+  ApiOperation,
+  ApiQuery,
+  ApiTags,
+} from '@nestjs/swagger';
+import { Public } from 'src/auth/decorators/public.decorators';
 
 @ApiBearerAuth('token')
 @ApiTags('Users - مدریت کاربران')
@@ -40,6 +46,9 @@ export class UserController {
   }
 
   @ApiOperation({ summary: ' لیست کار بر ها' })
+  @ApiQuery({ name: 'role', enum: userRoleEnum, required: false })
+  @ApiQuery({ name: 'limit', type: Number, required: true, example: 10 })
+  @ApiQuery({ name: 'page', type: Number, required: true, example: 1 })
   @Get()
   async findAll(
     @Res() res: Response,

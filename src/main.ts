@@ -4,12 +4,13 @@ import { ValidationPipe } from '@nestjs/common';
 import { DocumentBuilder, SwaggerModule } from '@nestjs/swagger';
 import { NestExpressApplication } from '@nestjs/platform-express';
 import { join } from 'path';
+import { Logger } from '@nestjs/common';
 
 // import { JtwAuthGuard } from './auth/guard/jwt-auth.guard';
 
 async function bootstrap() {
   const app = await NestFactory.create<NestExpressApplication>(AppModule);
-
+  const logger = new Logger();
   app.enableCors({
     origin: (origin, callback) => {
       callback(null, true);
@@ -43,5 +44,6 @@ async function bootstrap() {
   const document = SwaggerModule.createDocument(app, confing);
   SwaggerModule.setup('api', app, document);
   await app.listen(process.env.PORT);
+  logger.log(`Application is running on: ${await app.getUrl()}`, 'Bootstrap');
 }
 bootstrap();
