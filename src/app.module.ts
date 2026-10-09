@@ -20,6 +20,7 @@ import * as redisStore from 'cache-manager-ioredis';
 import { CacheModule } from '@nestjs/cache-manager';
 import { RedisModule } from './redis/redis.module';
 import { AppController } from './app.controller';
+import { ContactusModule } from './contactus/contactus.module';
 
 @Module({
   imports: [
@@ -51,6 +52,7 @@ import { AppController } from './app.controller';
     CartsModule,
     IpTrackerModule,
     RedisModule,
+    ContactusModule,
   ],
   providers: [
     AuthService,
