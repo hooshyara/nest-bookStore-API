@@ -46,6 +46,12 @@ export class AuthService {
       const token = this.jwtService.sign(payload);
       return {
         accessToken: token,
+        userInfo: {
+          userId: user.id,
+          name: user.name,
+          mobile: user.mobile,
+          role: user.role,
+        },
       };
     } else {
       throw new UnauthorizedException('شماره موبایل یا پسورد اشتباه است.');

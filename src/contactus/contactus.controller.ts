@@ -8,7 +8,7 @@ import {
   Param,
 } from '@nestjs/common';
 import {
-  ApiBearerAuth,
+  // ApiBearerAuth,
   ApiOperation,
   ApiResponse,
   ApiTags,
@@ -17,9 +17,10 @@ import { ContactusService } from './contactus.service';
 import { CreateContactusDto } from './dto/create-contactus.dto';
 import { UpdateContactusDto } from './dto/update-contactus.dto';
 import { Contactus } from './entities/contactus.entity';
+import { Public } from 'src/auth/decorators/public.decorators';
 
 @ApiTags('Contactus')
-@ApiBearerAuth('access-token')
+@Public()
 @Controller('contactus')
 export class ContactusController {
   constructor(private readonly service: ContactusService) {}

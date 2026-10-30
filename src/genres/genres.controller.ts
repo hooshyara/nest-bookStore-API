@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import {
   Controller,
   Get,
@@ -26,14 +27,15 @@ import {
   ApiTags,
 } from '@nestjs/swagger';
 
-@ApiBearerAuth('token')
+// @ApiBearerAuth('token')
 @ApiTags('Genres - مدریت ژانر ها')
 @Controller('genres')
+@Public()
 export class GenresController {
   constructor(private readonly genresService: GenresService) {}
 
   @ApiOperation({ summary: 'ایجاد ژانر جدید' })
-  @UseGuards(RoleGuard)
+  // @UseGuards(RoleGuard)
   @Role(userRoleEnum.Admin, userRoleEnum.moderator)
   @Post()
   create(@Res() res: Response, @Body() createGenreDto: CreateGenreDto) {

@@ -40,10 +40,35 @@ export class BooksController {
 
   @ApiOperation({ summary: 'ایجاد کتاب جدید' })
   @UseGuards(RoleGuard)
-  @Role(userRoleEnum.Admin, userRoleEnum.moderator)
+  // @Role(userRoleEnum.Admin, userRoleEnum.moderator)
+  @Public()
+  @ApiConsumes('multipart/form-data')
+  @ApiBody({ type: CreateBookDto })
+  @ApiResponse({ status: 201, description: 'کتاب با موفقیت اضافه شد' })
+  @UseInterceptors(
+    FileInterceptor('image', {
+      storage: diskStorage({
+        destination: './uploads/books',
+        filename: (req, file, cb) => {
+          const unique = Date.now() + '-' + Math.round(Math.random() * 1e9);
+          cb(null, `${unique}${extname(file.originalname)}`);
+        },
+      }),
+      fileFilter: (req, file, cb) => {
+        if (!file.mimetype.match(/\/(jpg|jpeg|png|webp)$/)) {
+          return cb(new Error('فقط فایل تصویری مجاز است'), false);
+        }
+        cb(null, true);
+      },
+      limits: { fileSize: 5 * 1024 * 1024 },
+    }),
+  )
   @Post()
-  async create(@Body() createBookDto: CreateBookDto) {
-    const new_book = await this.booksService.create(createBookDto);
+  async create(
+    @Body() createBookDto: CreateBookDto,
+    @UploadedFile() image?: Express.Multer.File,
+  ) {
+    const new_book = await this.booksService.create(createBookDto, image);
     return {
       data: new_book,
       message: 'کتاب با موفقیت اضافه شد',
@@ -78,8 +103,9 @@ export class BooksController {
   }
 
   @ApiOperation({ summary: ' دریافت کتاب' })
-  @UseGuards(RoleGuard)
-  @Role(userRoleEnum.Admin, userRoleEnum.moderator)
+  // @UseGuards(RoleGuard)
+  // @Role(userRoleEnum.Admin, userRoleEnum.moderator)
+  @Public()
   @Put(':id')
   async update(@Param('id') id: string, @Body() updateBookDto: UpdateBookDto) {
     const book = await this.booksService.update(+id, updateBookDto);

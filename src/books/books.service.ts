@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateBookDto } from './dto/create-book.dto';
 import { UpdateBookDto } from './dto/update-book.dto';
@@ -7,6 +8,8 @@ import { Book } from './entities/book.entity';
 import { Repository } from 'typeorm';
 import { SearchBookDto } from './dto/search-book.dto';
 import { RedisService } from 'src/redis/redis.service';
+import { unlink } from 'fs/promises';
+import { join } from 'path';
 
 @Injectable()
 export class BooksService {
@@ -19,15 +22,41 @@ export class BooksService {
 
   private CACHE_KEY = 'books:all';
 
-  async create(createBookDto: CreateBookDto) {
-    const genre = await this.genresService.findOne(createBookDto.genre_id);
-    if (!genre) throw new NotFoundException('شناسه یکتای ژانر موجود نیست');
+  async create(createBookDto: CreateBookDto, image?: Express.Multer.File) {
+    const { genre_id, image: _imageFile, ...rest } = createBookDto as any;
+
+    const genre = await this.genresService.findOne(genre_id);
+    if (!genre) {
+      if (image) {
+        await unlink(
+          join(process.cwd(), 'uploads/books', image.filename),
+        ).catch(() => {});
+      }
+      throw new NotFoundException('شناسه یکتای ژانر موجود نیست');
+    }
+
+    const imageUrl = image ? `/uploads/books/${image.filename}` : null;
+
     const new_book = this.bookRepository.create({
-      ...createBookDto,
+      ...rest,
+      imageUrl,
       genre,
     });
+
+    let saved;
+    try {
+      saved = await this.bookRepository.save(new_book);
+    } catch (err) {
+      if (image) {
+        await unlink(
+          join(process.cwd(), 'uploads/books', image.filename),
+        ).catch(() => {});
+      }
+      throw err;
+    }
+
     await this.redis.del(this.CACHE_KEY);
-    return await this.bookRepository.save(new_book);
+    return saved;
   }
 
   async findAll(title?: string, limit: number = 10, page: number = 1) {
